@@ -98,8 +98,18 @@ def main():
                 box_area = (x2 - x1) * (y2 - y1)
                 coverage_ratio = box_area / frame_area
 
-                # Draw standard boxes for all detected objects.
-                cv2.rectangle(processed_frame, (x1, y1), (x2, y2), (255, 0, 255), 2)
+                box_color = (255, 0, 255) # Default: Magenta
+
+                # Check if object meets the proximity threshold to be a "warning".
+                if coverage_ratio >= PROXIMITY_THRESHOLD:
+                    box_color = (0, 0, 255) # Red for any warning object
+                    # If it's the largest warning object found so far in this frame, store it as dominant.
+                    if box_area > max_dominant_area:
+                        max_dominant_area = box_area
+                        dominant_object_in_frame = {"name": class_name, "box": (x1, y1, x2, y2)}
+                
+                # Draw the bounding box with the determined color
+                cv2.rectangle(processed_frame, (x1, y1), (x2, y2), box_color, 2)
                 
                 # Check if object meets the proximity threshold to be a "warning".
                 if coverage_ratio >= PROXIMITY_THRESHOLD:
@@ -149,6 +159,7 @@ def main():
         else:
             # Clear the warning if the timer has expired.
             current_warning_object = None
+
 
         cv2.imshow("Assistive Object Detection", processed_frame)
 
